@@ -1,10 +1,11 @@
 package br.com.mpr.image.service
 
+import br.com.mpr.image.vo.DimensionVo
 import org.junit.Test
 import java.io.File
+import java.util.*
 import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
-import java.awt.Image
+import kotlin.collections.ArrayList
 
 class ImageServiceTest{
 
@@ -18,17 +19,60 @@ class ImageServiceTest{
     }
 
     @Test
-    fun merge(){
+    fun mergeVariasImagens(){
         val imageService = ImageService()
-        val portaretrato = File("/home/wagner/Downloads/f1.png")
-        val foto = File("/home/wagner/Downloads/foto.jpg")
-        val imageDest = File("/home/wagner/Downloads/merge1.png")
+        for (x in 1 until 6)
+            for(y in 1 until 12){
+                val portaretrato = File("/home/wagner/Downloads/teste/pr/pr$x.png")
+                val foto = File("/home/wagner/Downloads/teste/foto/f$y.jpg")
+                val imageDest = File("/home/wagner/Downloads/teste/preview/f${y}pr$x.png")
+                imageService.merge(foto,portaretrato,imageDest)
+            }
 
+    }
+
+    @Test
+    fun mergePortrait(){
+        val imageService = ImageService()
+        val portaretrato = File("/home/wagner/Downloads/teste/pr/pr1.png")
+        val foto = File("/home/wagner/Downloads/teste/foto/f7.jpg")
+        val imageDest = File("/home/wagner/Downloads/teste/preview/f7pr1.png")
         imageService.merge(foto,portaretrato,imageDest)
 
-        val portaretrato2 = File("/home/wagner/Downloads/f2.png")
-        val imageDest2 = File("/home/wagner/Downloads/merge2.png")
 
-        imageService.merge(foto,portaretrato2,imageDest2)
+    }
+
+
+
+    @Test
+    fun mergeFrame(){
+        val imageService = ImageService()
+        var images = ArrayList<File>(16)
+        for ( i in 1..16 ) images.add(File("/home/wagner/Downloads/teste/foto/f$i.jpg"))
+        var quadro = File("/home/wagner/Downloads/teste/pr/quadro.png")
+        val imageDest = File("/home/wagner/Downloads/teste/preview/quadroPreview.png")
+        imageService.merge(images.toTypedArray(),quadro,imageDest)
+
+
+    }
+
+
+    @Test
+    fun getTransparentDimension(){
+        val imageService = ImageService()
+        val portaretrato = File("/home/wagner/Downloads/pr.png")
+
+        println(imageService.getTransparentDimension(ImageIO.read(portaretrato)))
+    }
+
+
+    @Test
+    fun getMetadata(){
+        val imageService = ImageService()
+        val portaretrato = File("/home/wagner/Downloads/quadro.png")
+
+        var dimensions = imageService.getTransparentDimensionOfMetadata(portaretrato)
+
+        dimensions.forEach { d -> println(d)}
     }
 }
