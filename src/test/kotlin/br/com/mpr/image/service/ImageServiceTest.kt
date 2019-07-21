@@ -1,9 +1,7 @@
 package br.com.mpr.image.service
 
-import br.com.mpr.image.vo.DimensionVo
 import org.junit.Test
 import java.io.File
-import java.util.*
 import javax.imageio.ImageIO
 import kotlin.collections.ArrayList
 
@@ -15,7 +13,7 @@ class ImageServiceTest{
         val image = File("/home/wagner/Downloads/teste.jpg")
         val imageDest = File("/home/wagner/Downloads/foto.jpg")
 
-        imageService.resize(image,490,imageDest)
+        imageService.resizeByWidth(image,490,imageDest)
     }
 
     @Test
@@ -74,5 +72,14 @@ class ImageServiceTest{
         var dimensions = imageService.getTransparentDimensionOfMetadata(portaretrato)
 
         dimensions.forEach { d -> println(d)}
+    }
+
+    @Test
+    fun adjustAndResize(){
+        val imageService = ImageService()
+
+        for ( i in 1..16 ) imageService.adjustAndResize(File("/home/wagner/Downloads/teste/foto_original/f$i.jpg"),
+                600,File("/home/wagner/Downloads/teste/foto/f$i.jpg"))
+
     }
 }

@@ -1,9 +1,9 @@
 package br.com.mpr.image.vo
 
-data class DimensionVo(val minWidth:Int, val minHeight: Int, val maxWidth: Int, val maxHeight: Int){
+data class DimensionVo(val startWidth:Int, val startHeight: Int, val endWidth: Int, val endHeight: Int){
 
     fun isPortrait(): Boolean{
-        return maxHeight - minHeight > maxWidth - minWidth
+        return endHeight - startHeight > endWidth - startWidth
     }
 
 }

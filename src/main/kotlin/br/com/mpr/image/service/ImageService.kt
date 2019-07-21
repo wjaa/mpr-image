@@ -13,31 +13,53 @@ import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import java.io.File
-import java.util.*
 import javax.imageio.ImageIO
+import kotlin.collections.ArrayList
 import kotlin.system.measureTimeMillis
 
 class ImageService{
 
+
+    /**
+     * Ajusta a orientação da imagem e faz o resizeByWidth para o tamanho maximo.
+     */
+    fun adjustAndResize(image:File, maxSize: Int, imageResult: File){
+        var bufferedImage = reviseOrientation(image)
+        if (imagePortrait(bufferedImage)){
+            bufferedImage = resizeByHeight(bufferedImage,maxSize)
+        }else{
+            bufferedImage = resizeByWidth(bufferedImage,maxSize)
+        }
+        ImageIO.write(bufferedImage, "jpg", imageResult)
+    }
+
     /**
      * Redimenciona um File image mantendo a proporcao pelo comprimento.
      */
-    fun resize(image: File, width: Int, imageResult : File){
+    fun resizeByWidth(image: File, width: Int, imageResult : File){
         val sourceImage = ImageIO.read(image)
-        val thumbnail = sourceImage.getScaledInstance(width, -1, Image.SCALE_SMOOTH)
-        val bufferedThumbnail = BufferedImage(thumbnail.getWidth(null),
-                thumbnail.getHeight(null),
-                BufferedImage.TYPE_INT_RGB)
-        bufferedThumbnail.graphics.drawImage(thumbnail, 0, 0, null)
+        val bufferedThumbnail = resizeByWidth(sourceImage, width)
         ImageIO.write(bufferedThumbnail, "jpg", imageResult)
 
     }
+
+
+    /**
+     * Redimenciona um File image mantendo a proporcao pela altura.
+     */
+    fun resizeByHeight(image: File, height: Int, imageResult : File){
+        val sourceImage = ImageIO.read(image)
+        val bufferedThumbnail = resizeByHeight(sourceImage, height)
+        ImageIO.write(bufferedThumbnail, "jpg", imageResult)
+
+    }
+
 
     /**
      * Redimenciona uma BufferedImage mantendo a proporcao da largura da imagem.
      * Devolve o BufferedImage redimencionado
      */
-    fun resizeByWidth(sourceImage: BufferedImage, width: Int ): BufferedImage{
+    private fun resizeByWidth(sourceImage: BufferedImage, width: Int ): BufferedImage{
         val thumbnail = sourceImage.getScaledInstance(width, -1, Image.SCALE_SMOOTH)
         val bufferedThumbnail = BufferedImage(thumbnail.getWidth(null),
                 thumbnail.getHeight(null),
@@ -50,7 +72,7 @@ class ImageService{
      * Redimenciona um BufferedImage mantendo a proporcao da altura da imagem.
      * Devolve o BufferedImage redimencionado
      */
-    fun resizeByHeight(sourceImage: BufferedImage, height: Int ): BufferedImage{
+    private fun resizeByHeight(sourceImage: BufferedImage, height: Int ): BufferedImage{
         val thumbnail = sourceImage.getScaledInstance(-1, height, Image.SCALE_SMOOTH)
         val bufferedThumbnail = BufferedImage(thumbnail.getWidth(null),
                 thumbnail.getHeight(null),
@@ -59,6 +81,10 @@ class ImageService{
         return bufferedThumbnail
     }
 
+    /**
+     * Esse merge nao revisa a orientacao da imagem.
+     * Use o metodo adjustAndResize para ajustar a orientacao da imagem antes de fazer o merge em frame.
+     */
     fun merge(filesPictures: Array<File>, frameImage: File, imageResult: File){
         var frame = ImageIO.read(frameImage)
         val dimensions = getTransparentDimensionOfMetadata(frameImage)
@@ -67,7 +93,7 @@ class ImageService{
             throw IllegalArgumentException("Quantidade de fotos (${filesPictures.size}) não compativel " +
                     "com a quantiade de espaços (${dimensions.size}).")
 
-        var pictures = reviseOrientation(filesPictures)
+        var pictures = getArrayBufferedImage(filesPictures)
         // create the new image, canvas size is the max. of both image sizes
         //val w = Math.max(backImage.width, frontImage.width)
         //val h = Math.max(backImage.height, frontImage.height)
@@ -89,16 +115,16 @@ class ImageService{
             //ajustando o tamanho da foto para o tamanho da transparencia
 
             pic = if (dimen.isPortrait()){
-                resizeByWidth(pic,(dimen.maxWidth - dimen.minWidth)+10)
+                resizeByWidth(pic,(dimen.endWidth - dimen.startWidth)+10)
             }else{
-                resizeByHeight(pic,(dimen.maxHeight - dimen.minHeight)+10)
+                resizeByHeight(pic,(dimen.endHeight - dimen.startHeight)+10)
             }
 
-            val widthMargin =  (dimen.maxWidth - dimen.minWidth - pic.width) / 2
-            val heightMargin = (dimen.maxHeight - dimen.minHeight - pic.height) / 2
+            val widthMargin =  (dimen.endWidth - dimen.startWidth - pic.width) / 2
+            val heightMargin = (dimen.endHeight - dimen.startHeight - pic.height) / 2
 
             //adicionando uma margem na foto do cliente
-            g.drawImage(pic, dimen.minWidth + widthMargin, dimen.minHeight + heightMargin, null)
+            g.drawImage(pic, dimen.startWidth + widthMargin, dimen.startHeight + heightMargin, null)
             g.drawImage(frame, 0, 0, null)
 
             // Save as new image
@@ -110,7 +136,11 @@ class ImageService{
 
     }
 
-
+    private fun getArrayBufferedImage(filesPictures: Array<File>): Array<BufferedImage> {
+        var arrayList = ArrayList<BufferedImage>(filesPictures.size)
+        filesPictures.forEach { file ->  arrayList.add(ImageIO.read(file)) }
+        return arrayList.toTypedArray()
+    }
 
 
     fun merge (backImageFile: File, frontImageFile: File, imageResult: File){
@@ -122,7 +152,7 @@ class ImageService{
 
         }
         var dimension = getTransparentDimension(frontImage)
-        backImage = resizeByHeight(backImage,(dimension.maxHeight - dimension.minHeight)+20)
+        backImage = resizeByHeight(backImage,(dimension.endHeight - dimension.startHeight)+20)
 
         // create the new image, canvas size is the max. of both image sizes
         //val w = Math.max(backImage.width, frontImage.width)
@@ -135,11 +165,11 @@ class ImageService{
         val g = combined.graphics
 
 
-        val widthMargin =  (dimension.maxWidth - dimension.minWidth - backImage.width) / 2
-        val heightMargin = (dimension.maxHeight - dimension.minHeight - backImage.height) / 2
+        val widthMargin =  (dimension.endWidth - dimension.startWidth - backImage.width) / 2
+        val heightMargin = (dimension.endHeight - dimension.startHeight - backImage.height) / 2
 
         //adicionando uma margem na foto do cliente
-        g.drawImage(backImage, dimension.minWidth + widthMargin, dimension.minHeight + heightMargin, null)
+        g.drawImage(backImage, dimension.startWidth + widthMargin, dimension.startHeight + heightMargin, null)
         g.drawImage(frontImage, 0, 0, null)
 
         val imageFinal = cleanTransparent(combined)
@@ -245,8 +275,6 @@ class ImageService{
 
     private fun reviseOrientation(images: Array<File>): Array<BufferedImage> {
         val buffers = ArrayList<BufferedImage>(images.size)
-
-
         images.forEach { file -> buffers.add(reviseOrientation(file)) }
         return buffers.toTypedArray()
     }
