@@ -13,6 +13,8 @@ import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import javax.imageio.ImageIO
 import kotlin.collections.ArrayList
 import kotlin.system.measureTimeMillis
@@ -24,6 +26,14 @@ class ImageService{
      * Ajusta a orientação da imagem e faz o resizeByWidth para o tamanho maximo.
      */
     fun adjustAndResize(image:File, maxSize: Int, imageResult: File){
+        return adjustAndResize(FileInputStream(image), maxSize, imageResult)
+    }
+
+
+    /**
+     * Ajusta a orientação da imagem e faz o resizeByWidth para o tamanho maximo.
+     */
+    fun adjustAndResize(image:InputStream, maxSize: Int, imageResult: File){
         var bufferedImage = reviseOrientation(image)
         if (imagePortrait(bufferedImage)){
             bufferedImage = resizeByHeight(bufferedImage,maxSize)
@@ -32,6 +42,7 @@ class ImageService{
         }
         ImageIO.write(bufferedImage, "jpg", imageResult)
     }
+
 
     /**
      * Redimenciona um File image mantendo a proporcao pelo comprimento.
@@ -144,7 +155,7 @@ class ImageService{
 
 
     fun merge (backImageFile: File, frontImageFile: File, imageResult: File){
-        var backImage = reviseOrientation(backImageFile)
+        var backImage = reviseOrientation(FileInputStream(backImageFile))
         var frontImage = ImageIO.read(frontImageFile)
 
         if(!imagePortrait(backImage)){
@@ -251,8 +262,8 @@ class ImageService{
 
     }
 
-    private fun reviseOrientation(image: File): BufferedImage {
-        val metadata = ImageMetadataReader.readMetadata(image)
+    private fun reviseOrientation(input: InputStream): BufferedImage {
+        val metadata = ImageMetadataReader.readMetadata(input)
         val directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory::class.java)
         val jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory::class.java)
 
@@ -269,13 +280,13 @@ class ImageService{
         println("width = $width height = $height orientation = $orientation")
 
         val information = ImageInformation(orientation, width, height)
-        return transformImage(ImageIO.read(image), getExifTransformation(information))
+        return transformImage(ImageIO.read(input), getExifTransformation(information))
 
     }
 
     private fun reviseOrientation(images: Array<File>): Array<BufferedImage> {
         val buffers = ArrayList<BufferedImage>(images.size)
-        images.forEach { file -> buffers.add(reviseOrientation(file)) }
+        images.forEach { file -> buffers.add(reviseOrientation(FileInputStream(file))) }
         return buffers.toTypedArray()
     }
 
