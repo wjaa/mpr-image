@@ -271,8 +271,8 @@ class ImageService{
         try {
             orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION)
 
-        } catch (me: MetadataException) {
-
+        } catch (me: Exception) {
+            //utiliza a orientacao padrao.
         }
 
         val width = jpegDirectory.imageWidth
