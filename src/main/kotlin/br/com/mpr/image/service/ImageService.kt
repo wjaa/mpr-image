@@ -3,7 +3,6 @@ package br.com.mpr.image.service
 import br.com.mpr.image.utils.toObject
 import br.com.mpr.image.vo.DimensionVo
 import com.drew.imaging.ImageMetadataReader
-import com.drew.metadata.MetadataException
 import com.drew.metadata.exif.ExifIFD0Directory
 import com.drew.metadata.jpeg.JpegDirectory
 import com.google.gson.reflect.TypeToken
@@ -26,14 +25,6 @@ class ImageService{
      * Ajusta a orientação da imagem e faz o resizeByWidth para o tamanho maximo.
      */
     fun adjustAndResize(image:File, maxSize: Int, imageResult: File){
-        return adjustAndResize(FileInputStream(image), maxSize, imageResult)
-    }
-
-
-    /**
-     * Ajusta a orientação da imagem e faz o resizeByWidth para o tamanho maximo.
-     */
-    fun adjustAndResize(image:InputStream, maxSize: Int, imageResult: File){
         var bufferedImage = reviseOrientation(image)
         if (imagePortrait(bufferedImage)){
             bufferedImage = resizeByHeight(bufferedImage,maxSize)
@@ -155,7 +146,7 @@ class ImageService{
 
 
     fun merge (backImageFile: File, frontImageFile: File, imageResult: File){
-        var backImage = reviseOrientation(FileInputStream(backImageFile))
+        var backImage = reviseOrientation(backImageFile)
         var frontImage = ImageIO.read(frontImageFile)
 
         if(!imagePortrait(backImage)){
@@ -188,8 +179,6 @@ class ImageService{
         // Save as new image
         ImageIO.write(imageFinal, "PNG", imageResult)
     }
-
-
 
 
     fun rotate(image: BufferedImage):BufferedImage{
@@ -262,11 +251,11 @@ class ImageService{
 
     }
 
-    private fun reviseOrientation(input: InputStream): BufferedImage {
-        val metadata = ImageMetadataReader.readMetadata(input)
+    private fun reviseOrientation(file: File): BufferedImage {
+        val metadata = ImageMetadataReader.readMetadata(file)
         val directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory::class.java)
-        val jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory::class.java)
 
+        val image = ImageIO.read(file)
         var orientation = 1
         try {
             orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION)
@@ -275,18 +264,18 @@ class ImageService{
             //utiliza a orientacao padrao.
         }
 
-        val width = jpegDirectory.imageWidth
-        val height = jpegDirectory.imageHeight
+        val width = image.width
+        val height = image.height
         println("width = $width height = $height orientation = $orientation")
 
         val information = ImageInformation(orientation, width, height)
-        return transformImage(ImageIO.read(input), getExifTransformation(information))
+        return transformImage(image, getExifTransformation(information))
 
     }
 
     private fun reviseOrientation(images: Array<File>): Array<BufferedImage> {
         val buffers = ArrayList<BufferedImage>(images.size)
-        images.forEach { file -> buffers.add(reviseOrientation(FileInputStream(file))) }
+        images.forEach { file -> buffers.add(reviseOrientation(file)) }
         return buffers.toTypedArray()
     }
 
