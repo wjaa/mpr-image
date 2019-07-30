@@ -1,56 +1,107 @@
 package br.com.mpr.image.service
 
+import org.junit.Assert
 import org.junit.Test
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.collections.ArrayList
 
 class ImageServiceTest{
 
     @Test
-    fun resize(){
+    fun resizeByWidth(){
         val imageService = ImageService()
-        val image = File("/home/wagner/Downloads/teste.jpg")
-        val imageDest = File("/home/wagner/Downloads/foto.jpg")
+        val fileImage = File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+        val fileImageDest = File.createTempFile("resizeByWidth",".tmp")
+        imageService.resizeByWidth(fileImage,200,fileImageDest)
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val image = ImageIO.read(fileImageDest)
+        Assert.assertNotNull(image)
+        Assert.assertEquals(200,image.width)
 
-        imageService.resizeByWidth(image,490,imageDest)
+        fileImageDest.deleteOnExit()
+
     }
 
     @Test
-    fun mergeVariasImagens(){
+    fun resizeByHeight(){
         val imageService = ImageService()
-        for (x in 1 until 6)
-            for(y in 1 until 12){
-                val portaretrato = File("/home/wagner/Downloads/teste/pr/pr$x.png")
-                val foto = File("/home/wagner/Downloads/teste/foto/f$y.jpg")
-                val imageDest = File("/home/wagner/Downloads/teste/preview/f${y}pr$x.png")
-                imageService.merge(foto,portaretrato,imageDest)
-            }
+        val fileImage = File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+        val fileImageDest = File.createTempFile("resizeByHeight",".tmp")
+        imageService.resizeByHeight(fileImage,200,fileImageDest)
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val image = ImageIO.read(fileImageDest)
+        Assert.assertNotNull(image)
+        Assert.assertEquals(200,image.height)
+
+        fileImageDest.deleteOnExit()
+
+    }
+
+    @Test
+    fun merge(){
+        val imageService = ImageService()
+
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("frame.png").toURI())
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+        val fileImageDest = File.createTempFile("merge",".tmp")
+        imageService.merge(foto,portaretrato,fileImageDest)
+
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(portaretrato)
+        Assert.assertNotNull(imageResult)
+        //a imagem resultante tem que ter estar na horizontal.
+        Assert.assertEquals(imageFrame.height,imageResult.width)
+        Assert.assertEquals(imageFrame.width,imageResult.height)
+
+        fileImageDest.deleteOnExit()
 
     }
 
     @Test
     fun mergePortrait(){
         val imageService = ImageService()
-        val portaretrato = File("/home/wagner/Downloads/teste/pr/pr1.png")
-        val foto = File("/home/wagner/Downloads/teste/foto/f7.jpg")
-        val imageDest = File("/home/wagner/Downloads/teste/preview/f7pr1.png")
-        imageService.merge(foto,portaretrato,imageDest)
-
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("frame2.png").toURI())
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotoretrato.jpg").toURI())
+        val fileImageDest = File.createTempFile("mergePortrait",".tmp")
+        imageService.merge(foto,portaretrato,fileImageDest)
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(portaretrato)
+        Assert.assertNotNull(imageResult)
+        Assert.assertEquals(imageFrame.width,imageResult.width)
+        Assert.assertEquals(imageFrame.height,imageResult.height)
+        fileImageDest.deleteOnExit()
 
     }
 
 
 
     @Test
-    fun mergeFrame(){
+    fun mergeFrameMultiPic(){
         val imageService = ImageService()
         var images = ArrayList<File>(16)
-        for ( i in 1..16 ) images.add(File("/home/wagner/Downloads/teste/foto/f$i.jpg"))
-        var quadro = File("/home/wagner/Downloads/teste/pr/quadro.png")
-        val imageDest = File("/home/wagner/Downloads/teste/preview/quadroPreview.png")
-        imageService.merge(images.toTypedArray(),quadro,imageDest)
+        for ( i in 1..16 )
+            images.add(
+                    if (i % 2 == 0) File(ImageServiceTest::class.java.classLoader.getResource("fotoretrato.jpg").toURI())
+                    else File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+            )
 
+        var portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("quadro.png").toURI())
+        val fileImageDest = File.createTempFile("mergeFrameMultiPic",".tmp")
+        imageService.merge(images.toTypedArray(),portaretrato,fileImageDest)
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(portaretrato)
+        Assert.assertNotNull(imageResult)
+        Assert.assertEquals(imageFrame.width,imageResult.width)
+        Assert.assertEquals(imageFrame.height,imageResult.height)
+        fileImageDest.deleteOnExit()
 
     }
 
@@ -58,28 +109,48 @@ class ImageServiceTest{
     @Test
     fun getTransparentDimension(){
         val imageService = ImageService()
-        val portaretrato = File("/home/wagner/Downloads/pr.png")
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("frame.png").toURI())
 
-        println(imageService.getTransparentDimension(ImageIO.read(portaretrato)))
+        val dimension = imageService.getTransparentDimension(ImageIO.read(portaretrato))
+        Assert.assertNotNull(dimension)
+        Assert.assertTrue(dimension.startWidth > 0)
+        Assert.assertTrue(dimension.startHeight > 0)
+        Assert.assertTrue(dimension.endHeight > 0)
+        Assert.assertTrue(dimension.endWidth > 0)
     }
-
 
     @Test
-    fun getMetadata(){
+    fun getTransparentDimensionOfMetadata(){
         val imageService = ImageService()
-        val portaretrato = File("/home/wagner/Downloads/quadro.png")
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("quadro.png").toURI())
 
-        var dimensions = imageService.getTransparentDimensionOfMetadata(portaretrato)
-
-        dimensions.forEach { d -> println(d)}
+        val dimensions = imageService.getTransparentDimensionOfMetadata(portaretrato)
+        Assert.assertNotNull(dimensions)
+        dimensions.forEach { dimension ->
+            Assert.assertTrue(dimension.startWidth > 0)
+            Assert.assertTrue(dimension.startHeight > 0)
+            Assert.assertTrue(dimension.endHeight > 0)
+            Assert.assertTrue(dimension.endWidth > 0)
+        }
     }
+
 
     @Test
     fun adjustAndResize(){
         val imageService = ImageService()
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotoretrato.jpg").toURI())
+        val fileImageDest = File.createTempFile("adjustAndResize",".tmp")
+        imageService.adjustAndResize(foto,200,fileImageDest)
 
-        for ( i in 1..16 ) imageService.adjustAndResize(File("/home/wagner/Downloads/teste/foto_original/f$i.jpg"),
-                600,File("/home/wagner/Downloads/teste/foto/f$i.jpg"))
+        imageService.resizeByWidth(fileImageDest,200,fileImageDest)
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val image = ImageIO.read(fileImageDest)
+        Assert.assertNotNull(image)
+        Assert.assertEquals(200,image.width)
+
+        fileImageDest.deleteOnExit()
 
     }
+
 }
