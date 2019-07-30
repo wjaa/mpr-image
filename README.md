@@ -75,4 +75,4 @@ O resultado é algo como abaixo:
 
 <img src="https://www.pontofrio-imagens.com.br/decoracao/PortaRetrato/8935710/448929305/Porta-retrato-Kapos-Paramount-para-Foto-15x21-cm-Preto-8935710.jpg" width="250">
 
-Encaixamos uma foto dentro de uma porta-retrato.
+Encaixamos uma foto dentro de um porta-retrato.
