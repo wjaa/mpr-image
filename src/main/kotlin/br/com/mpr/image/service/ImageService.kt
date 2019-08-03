@@ -117,9 +117,9 @@ class ImageService{
             //ajustando o tamanho da foto para o tamanho da transparencia
 
             pic = if (dimen.isPortrait()){
-                resizeByWidth(pic,(dimen.endWidth - dimen.startWidth)+10)
+                resizeByWidth(pic,(dimen.endWidth - dimen.startWidth)+3)
             }else{
-                resizeByHeight(pic,(dimen.endHeight - dimen.startHeight)+10)
+                resizeByHeight(pic,(dimen.endHeight - dimen.startHeight)+3)
             }
 
             val widthMargin =  (dimen.endWidth - dimen.startWidth - pic.width) / 2
@@ -154,7 +154,7 @@ class ImageService{
 
         }
         var dimension = getTransparentDimension(frontImage)
-        backImage = resizeByHeight(backImage,(dimension.endHeight - dimension.startHeight)+20)
+        backImage = resizeByHeight(backImage,(dimension.endHeight - dimension.startHeight)+15)
 
         // create the new image, canvas size is the max. of both image sizes
         //val w = Math.max(backImage.width, frontImage.width)
@@ -238,7 +238,7 @@ class ImageService{
 
     fun getTransparentDimensionOfMetadata(image: File): Array<DimensionVo>{
         val metadata = ImageMetadataReader.readMetadata(image)
-        val directory = metadata.directories.find { it.name == "PNG-tEXt" }
+        val directory = metadata.directories.find { it.name == "PNG-tEXt" || it.name == "PNG-zTXt"}
         val comment = directory?.tags?.find { it.tagName == "Textual Data" }
         val jsonDimension = comment?.description?.replace("Comment: ","")
 
