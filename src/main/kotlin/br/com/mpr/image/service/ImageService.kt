@@ -238,7 +238,7 @@ class ImageService{
 
     fun getTransparentDimensionOfMetadata(image: File): Array<DimensionVo>{
         val metadata = ImageMetadataReader.readMetadata(image)
-        val directory = metadata.directories.find { it.name == "PNG-tEXt" || it.name == "PNG-zTXt"}
+        val directory = metadata.directories.findLast { it.name == "PNG-tEXt" || it.name == "PNG-zTXt"}
         val comment = directory?.tags?.find { it.tagName == "Textual Data" }
         val jsonDimension = comment?.description?.replace("Comment: ","")
 

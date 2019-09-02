@@ -149,6 +149,20 @@ class ImageServiceTest{
         }
     }
 
+    @Test
+    fun getTransparentDimensionOfMetadata3(){
+        val imageService = ImageService()
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("quadro2.png").toURI())
+
+        val dimensions = imageService.getTransparentDimensionOfMetadata(portaretrato)
+        Assert.assertNotNull(dimensions)
+        dimensions.forEach { dimension ->
+            Assert.assertTrue(dimension.startWidth > 0)
+            Assert.assertTrue(dimension.startHeight > 0)
+            Assert.assertTrue(dimension.endHeight > 0)
+            Assert.assertTrue(dimension.endWidth > 0)
+        }
+    }
 
     @Test
     fun adjustAndResize(){
