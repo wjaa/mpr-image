@@ -1,12 +1,12 @@
-#MPR IMAGE
+# MPR IMAGE
 Responsável por redimencionar a imagens, corrigir orientação e fazer merge entre imagens.
 
-###Features Principais  
+### Features Principais  
 - Adjustment Orientation
 - Resize
 - Merge
 
-#####Adjustment Orientation
+##### Adjustment Orientation
 Esse método ajusta a orientação da imagem e faz o resize para o tamanho máximo enviado no em **maxSize**.
 
 É necessário enviar o caminho da imagem resultante para tirar esse responsábilidade do método.
