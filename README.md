@@ -1,12 +1,12 @@
-#MPR IMAGE
+# MPR IMAGE
 Responsável por redimencionar a imagens, corrigir orientação e fazer merge entre imagens.
 
-###Features Principais  
+### Features Principais  
 - Adjustment Orientation
 - Resize
 - Merge
 
-#####Adjustment Orientation
+##### Adjustment Orientation
 Esse método ajusta a orientação da imagem e faz o resize para o tamanho máximo enviado no em **maxSize**.
 
 É necessário enviar o caminho da imagem resultante para tirar esse responsábilidade do método.
@@ -62,7 +62,7 @@ A estrutura dos pontos transparentes estão no formato JSON:
   {"startWidth":185,"startHeight":149,"endWidth":266,"endHeight":268}
 ]
 ``
-
+IMPORTANTE: O gimp do mac não está exportado o PNG como deveria, ou não está mostrando o metadado como deveria, então optamos por criar esse comentário apenas no gimp do linux.
 
 O metodo abaixo é mais inteligente e tenta encontrar um quadrado transparente, dentro da imagem front. Como é apenas uma
 imagem a ser "encaixada", então é mais facil encontrar o espaço transparente.
