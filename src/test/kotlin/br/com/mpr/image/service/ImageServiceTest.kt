@@ -62,6 +62,74 @@ class ImageServiceTest{
     }
 
     @Test
+    fun mergeChooseFrameLandscape(){
+        val imageService = ImageService()
+
+        val prPortrait = File(ImageServiceTest::class.java.classLoader.getResource("frame-portrait.png").toURI())
+        val prLandscape = File(ImageServiceTest::class.java.classLoader.getResource("frame-landscape.png").toURI())
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+        val fileImageDest = File.createTempFile("merge",".tmp")
+        imageService.merge(foto,prPortrait,prLandscape,fileImageDest)
+
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(prLandscape)
+        Assert.assertNotNull(imageResult)
+        //a imagem resultante tem que estar na horizontal.
+        Assert.assertEquals(imageFrame.width,imageResult.width)
+        Assert.assertEquals(imageFrame.height,imageResult.height)
+
+        //fileImageDest.deleteOnExit()
+
+    }
+
+    @Test
+    fun mergeChooseFramePortrait(){
+        val imageService = ImageService()
+
+        val prPortrait = File(ImageServiceTest::class.java.classLoader.getResource("frame-portrait.png").toURI())
+        val prLandscape = File(ImageServiceTest::class.java.classLoader.getResource("frame-landscape.png").toURI())
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotoretrato.jpg").toURI())
+        val fileImageDest = File.createTempFile("merge",".tmp")
+        imageService.merge(foto,prPortrait,prLandscape,fileImageDest)
+
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(prPortrait)
+        Assert.assertNotNull(imageResult)
+        //a imagem resultante tem que estar na vertical.
+        Assert.assertEquals(imageFrame.width,imageResult.width)
+        Assert.assertEquals(imageFrame.height,imageResult.height)
+
+        //fileImageDest.deleteOnExit()
+
+    }
+
+    @Test
+    fun merge2(){
+        val imageService = ImageService()
+
+        val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("frame4.png").toURI())
+        val foto = File(ImageServiceTest::class.java.classLoader.getResource("fotopaisagem.jpg").toURI())
+        val fileImageDest = File.createTempFile("merge",".tmp")
+        imageService.merge(foto,portaretrato,fileImageDest)
+
+        Assert.assertTrue(fileImageDest.isFile)
+        Assert.assertTrue(fileImageDest.exists())
+        val imageResult = ImageIO.read(fileImageDest)
+        val imageFrame = ImageIO.read(portaretrato)
+        Assert.assertNotNull(imageResult)
+        //a imagem resultante tem que ter estar na horizontal.
+        Assert.assertEquals(imageFrame.height,imageResult.width)
+        Assert.assertEquals(imageFrame.width,imageResult.height)
+        print(fileImageDest.absoluteFile)
+        fileImageDest.deleteOnExit()
+
+    }
+
+    @Test
     fun mergePortrait(){
         val imageService = ImageService()
         val portaretrato = File(ImageServiceTest::class.java.classLoader.getResource("frame2.png").toURI())

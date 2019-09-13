@@ -144,6 +144,15 @@ class ImageService{
         return arrayList.toTypedArray()
     }
 
+    fun merge (backImageFile: File, frontImagePortraitFile: File, frontImageLandscapeFile: File, imageResult: File){
+        var backImage = reviseOrientation(backImageFile)
+        var frontImage = if(imagePortrait(backImage)){
+            ImageIO.read(frontImagePortraitFile)
+        }else{
+            ImageIO.read(frontImageLandscapeFile)
+        }
+        merge(frontImage, backImage, imageResult)
+    }
 
     fun merge (backImageFile: File, frontImageFile: File, imageResult: File){
         var backImage = reviseOrientation(backImageFile)
@@ -153,8 +162,13 @@ class ImageService{
             frontImage = rotate(frontImage)
 
         }
+        merge(frontImage, backImage, imageResult)
+    }
+
+    private fun merge(frontImage: BufferedImage, backImage: BufferedImage, imageResult: File) {
+        var backImage1 = backImage
         var dimension = getTransparentDimension(frontImage)
-        backImage = resizeByHeight(backImage,(dimension.endHeight - dimension.startHeight)+15)
+        backImage1 = resizeByHeight(backImage1, (dimension.endHeight - dimension.startHeight) + 15)
 
         // create the new image, canvas size is the max. of both image sizes
         //val w = Math.max(backImage.width, frontImage.width)
@@ -167,11 +181,11 @@ class ImageService{
         val g = combined.graphics
 
 
-        val widthMargin =  (dimension.endWidth - dimension.startWidth - backImage.width) / 2
-        val heightMargin = (dimension.endHeight - dimension.startHeight - backImage.height) / 2
+        val widthMargin = (dimension.endWidth - dimension.startWidth - backImage1.width) / 2
+        val heightMargin = (dimension.endHeight - dimension.startHeight - backImage1.height) / 2
 
         //adicionando uma margem na foto do cliente
-        g.drawImage(backImage, dimension.startWidth + widthMargin, dimension.startHeight + heightMargin, null)
+        g.drawImage(backImage1, dimension.startWidth + widthMargin, dimension.startHeight + heightMargin, null)
         g.drawImage(frontImage, 0, 0, null)
 
         val imageFinal = cleanTransparent(combined)
@@ -222,16 +236,19 @@ class ImageService{
         var maxWidth = 0
         var maxHeight = 0
 
-        for (y in 0 until height)
-            for (x in 0 until width)
-               if (image.getRGB(x, y) == 0 && minWidth == 0){
-                   minWidth = x
-                   minHeight = y
-               }else if (image.getRGB(x, y) == 0 ){
-                   if (x > maxWidth) maxWidth = x
-                   if (y > maxHeight) maxHeight = y
-               }
-
+        for (y in 0 until height){
+            println()
+            for (x in 0 until width) {
+                print(image.getRGB(x, y))
+                if (image.getRGB(x, y) == 0 && minWidth == 0) {
+                    minWidth = x
+                    minHeight = y
+                } else if (image.getRGB(x, y) == 0) {
+                    if (x > maxWidth) maxWidth = x
+                    if (y > maxHeight) maxHeight = y
+                }
+            }
+        }
         return DimensionVo(minWidth,minHeight,maxWidth,maxHeight)
 
     }
