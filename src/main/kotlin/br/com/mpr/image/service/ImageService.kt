@@ -237,9 +237,7 @@ class ImageService{
         var maxHeight = 0
 
         for (y in 0 until height){
-            println()
             for (x in 0 until width) {
-                print(image.getRGB(x, y))
                 if (image.getRGB(x, y) == 0 && minWidth == 0) {
                     minWidth = x
                     minHeight = y
